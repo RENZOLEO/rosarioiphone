@@ -26,11 +26,10 @@ export default async function MinoristaPage({
     location: p.ubicacion || "",
     video: p.video_referencia || "",
     image: "/placeholder.png",
-
     priceUSD: p.venta_usd || "",
     priceARS: p.venta_ars || "",
-    
     roi: p.rentabilidad || "",
+    price: p.venta_ars || p.venta_usd || "",
 }))
 
   return (

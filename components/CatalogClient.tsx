@@ -96,12 +96,16 @@ export function CatalogClient({ products }: { products: Props[] }) {
   }, [products, selectedModel, search, filters, sortOrder, sortGen])
 
   // Agrupar productos por modelo
-  const grouped = MODELOS.reduce((acc, modelo) => {
+  const grouped = MODELOS.reduce<Record<string, Props[]>>(
+  (acc, modelo) => {
     acc[modelo] = filteredProducts.filter((p) =>
       p.name.toLowerCase().includes(modelo.toLowerCase())
     )
     return acc
-  }, {})
+  },
+  {} as Record<string, Props[]>
+)
+
 
   return (
     <div className="space-y-12">

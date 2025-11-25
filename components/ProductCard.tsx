@@ -1,6 +1,6 @@
 "use client"
 
-type Props = {
+export type Props = {
   name: string
   capacity: string
   battery: string

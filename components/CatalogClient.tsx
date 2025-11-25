@@ -4,6 +4,8 @@ import { useMemo, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { ProductCard } from "@/components/ProductCard"
+import type { Props } from "@/components/ProductCard"
+
 
 
 // Detectamos generación por nombre
@@ -29,7 +31,7 @@ const MODELOS = [
   "IPHONE 17",
 ]
 
-export function CatalogClient({ products }: { products: [] }) {
+export function CatalogClient({ products }: { products: Props[] }) {
   const [selectedModel, setSelectedModel] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [filters, setFilters] = useState({

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { ProductCard } from "@/components/ProductCard"
 
+
 // Detectamos generación por nombre
 const getGeneration = (name: string) => {
   const n = name.toLowerCase()
@@ -28,7 +29,7 @@ const MODELOS = [
   "IPHONE 17",
 ]
 
-export function CatalogClient({ products }) {
+export function CatalogClient({ products }: { products: [] }) {
   const [selectedModel, setSelectedModel] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [filters, setFilters] = useState({

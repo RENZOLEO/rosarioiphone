@@ -1,20 +1,13 @@
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card"
-import Image from "next/image"
+"use client"
 
-interface ProductCardProps {
+type Props = {
   name: string
   capacity: string
   battery: string
   color: string
   imei: string
-  priceARS: string
   priceUSD: string
+  priceARS: string
   image: string
   video: string
 }
@@ -25,58 +18,139 @@ export function ProductCard({
   battery,
   color,
   imei,
-  priceARS,
   priceUSD,
-  image,
+  priceARS,
   video,
-}: ProductCardProps) {
+}: Props) {
+
+  // FORMATO APPLE PARA CAPACIDAD
+  const formattedCapacity = capacity
+    ?.replace("GB", " GB")
+    ?.replace("TB", " TB")
+    ?.toUpperCase()
+
+  // BADGES AUTOMÁTICOS PRO / PRO MAX / PLUS
+  const getModelBadge = () => {
+    const n = name.toLowerCase()
+    if (n.includes("pro max")) return "Pro Max"
+    if (n.includes("pro")) return "Pro"
+    if (n.includes("plus")) return "Plus"
+    return null
+  }
+
+  const badge = getModelBadge()
+
+  // PUNTO DE COLOR APPLE
+  const colorDot: Record<string, string> = {
+    negro: "bg-black",
+    black: "bg-black",
+    midnight: "bg-black",
+    blanco: "bg-gray-300",
+    white: "bg-gray-200",
+    silver: "bg-gray-300",
+    azul: "bg-blue-500",
+    blue: "bg-blue-500",
+    rojo: "bg-red-500",
+    red: "bg-red-500",
+    dorado: "bg-yellow-400",
+    gold: "bg-yellow-400",
+  }
+
+  const dotClass = colorDot[color.toLowerCase()] || "bg-gray-400"
+
+  // ESTADO DE BATERÍA ESTILO APPLE
+  const batteryNum = Number(battery || 0)
+
+  const batteryStatus =
+    batteryNum >= 95
+      ? "Excelente"
+      : batteryNum >= 90
+      ? "Muy buena"
+      : batteryNum >= 85
+      ? "Buena"
+      : "A revisar"
+
   return (
-    <Card className="hover:shadow-lg transition-all cursor-pointer border border-gray-200">
-      
-      {/* Imagen */}
-      <div className="relative w-full h-60 bg-gray-50">
-        <Image
-          src={image}
-          alt={name}
-          fill
-          className="object-contain p-4"
-        />
-      </div>
+    <div className="
+      rounded-3xl 
+      border border-gray-200 
+      p-6 
+      shadow-sm 
+      bg-white/70 
+      backdrop-blur-md 
+      hover:shadow-xl 
+      hover:-translate-y-1 
+      transition-all 
+      duration-300
+    ">
 
-      <CardHeader>
-        <CardTitle className="text-lg">
-          {name} — {capacity}
-        </CardTitle>
+      {/* TÍTULO */}
+      <h3 className="text-2xl font-semibold tracking-tight text-center font-[system-ui]">
+        {name}
+      </h3>
 
-        <CardDescription className="capitalize text-gray-600">
-          {color} • Batería {battery}%
-        </CardDescription>
-      </CardHeader>
+      {/* BADGE PRO / PRO MAX / PLUS */}
+      {badge && (
+        <div className="mt-2 text-center">
+          <span className="px-3 py-1 text-xs rounded-full bg-black text-white">
+            {badge}
+          </span>
+        </div>
+      )}
 
-      <CardContent className="space-y-2">
-        <p className="text-sm text-gray-500">IMEI: {imei}</p>
+      {/* INFO PRINCIPAL */}
+      <div className="mt-5 space-y-3 text-center">
 
-        <div className="space-y-1">
-          <p className="font-bold text-lg">
-            {priceARS}
+        {/* Capacidad + Color + Punto */}
+        <p className="text-gray-800 text-lg flex items-center justify-center gap-2">
+          {formattedCapacity}  
+          
+          {/* puntito de color */}
+          <span 
+            className={`h-3 w-3 rounded-full border ${dotClass}`} 
+          ></span>
+
+          <span className="capitalize">{color}</span>
+        </p>
+
+        {/* Estado de batería */}
+        {battery && (
+          <p className="text-gray-600 text-sm">
+            🔋 {battery}% — {batteryStatus}
           </p>
-          <p className="text-gray-600">
-            {priceUSD}
-          </p>
+        )}
+
+        {/* IMEI */}
+        <p className="text-gray-400 text-xs">IMEI: {imei}</p>
+
+        {/* Divider */}
+        <div className="border-t pt-3 mt-4" />
+
+        {/* Precio */}
+        <div className="text-xl font-semibold">
+          <span className="text-black">${priceUSD}</span>{" "}
+          <span className="text-gray-500 text-sm">USD</span>
         </div>
 
+        {priceARS && (
+          <p className="text-gray-500 text-sm">AR$ {priceARS}</p>
+        )}
+
+        {/* Video */}
         {video && (
           <a
             href={video}
             target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 underline text-sm block mt-2"
+            className="mt-4 inline-block text-black font-medium text-sm hover:underline"
           >
-            ▶ Ver video del producto
+            🎥 Ver video del equipo
           </a>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
+
+
+
 

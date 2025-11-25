@@ -1,21 +1,18 @@
-import Papa from "papaparse"
-
-export async function fetchSheet(sheetId: string) {
-  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`
+import * as Papa from "papaparse"
+export async function fetchSheet(sheetId: string, gid: string) {
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`
 
   const res = await fetch(url)
   if (!res.ok) throw new Error("Error al leer Google Sheets")
 
   const csv = await res.text()
 
-  // Parseo REAL de CSV (maneja comillas, comas decimales, etc.)
   const parsed = Papa.parse(csv, {
     skipEmptyLines: true,
   })
 
   const rows = parsed.data as string[][]
 
-  // Encontrar la fila con encabezados reales
   const headerRowIndex = rows.findIndex((cols) =>
     cols.some((col) =>
       col.toLowerCase().includes("modelo") ||
@@ -44,7 +41,6 @@ export async function fetchSheet(sheetId: string) {
 
   return products
 }
-
 
 
 

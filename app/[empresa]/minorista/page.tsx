@@ -1,6 +1,9 @@
 import { fetchSheet } from "@/lib/fetchSheet"
 import { CatalogClient } from "@/components/CatalogClient"
 
+// Sobrescribe cualquier type Product global
+type Product = any
+
 export default async function MinoristaPage() {
   const SHEET_ID = "1KiPkhmQLGfhLAmrknRFVEsdTyXcCfKO0NRY9IEvJwVg"
   const GID = "0" // poné acá el gid real de la pestaña Catalogo

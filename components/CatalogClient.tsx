@@ -1,14 +1,14 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { ProductCard } from "@/components/ProductCard"
 import type { Props } from "@/components/ProductCard"
 
-
-
-// Detectamos generación por nombre
+// -----------------------------------------------------
+// DETECCIÓN DE GENERACIÓN
+// -----------------------------------------------------
 const getGeneration = (name: string) => {
   const n = name.toLowerCase()
   if (n.includes("iphone 17")) return 17
@@ -21,6 +21,9 @@ const getGeneration = (name: string) => {
   return 0
 }
 
+// -----------------------------------------------------
+// MODELOS PRINCIPALES
+// -----------------------------------------------------
 const MODELOS = [
   "IPHONE 11",
   "IPHONE 12",
@@ -31,8 +34,43 @@ const MODELOS = [
   "IPHONE 17",
 ]
 
+// -----------------------------------------------------
+// SUBMODELOS FLEXIBLES
+// -----------------------------------------------------
+const SUBMODELOS_MAP: Record<string, string[]> = {
+  "IPHONE 11": ["11"],
+  "IPHONE 12": ["12", "12 mini"],
+  "IPHONE 13": ["13", "13 mini", "13 pro", "13 pro max"],
+  "IPHONE 14": ["14", "14 plus", "14 pro", "14 pro max"],
+  "IPHONE 15": ["15", "15 plus", "15 pro", "15 pro max"],
+  "IPHONE 16": ["16", "16 plus", "16 pro", "16 pro max"],
+  "IPHONE 17": ["17"],
+}
+
+// -----------------------------------------------------
+// MATCH INTELIGENTE DE SUBMODELOS
+// -----------------------------------------------------
+function matchesSubModel(modelo: string, sub: string): boolean {
+  const m = modelo.toLowerCase()
+  const s = sub.toLowerCase()
+
+  if (s.includes("pro max")) return m.includes("pro max") || m.includes("pm")
+  if (s.includes("pro")) return m.includes("pro")
+  if (s.includes("mini")) return m.includes("mini")
+  if (s.includes("plus")) return m.includes("plus")
+  if (/^\d+$/.test(s)) return m.includes(s)
+
+  return m.includes(s)
+}
+
+// -----------------------------------------------------
+// COMPONENTE PRINCIPAL
+// -----------------------------------------------------
 export function CatalogClient({ products }: { products: Props[] }) {
+
   const [selectedModel, setSelectedModel] = useState<string | null>(null)
+  const [selectedSubModel, setSelectedSubModel] = useState<string | null>(null)
+
   const [search, setSearch] = useState("")
   const [filters, setFilters] = useState({
     capacity: "",
@@ -44,7 +82,33 @@ export function CatalogClient({ products }: { products: Props[] }) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("none")
   const [sortGen, setSortGen] = useState<"new" | "old" | "none">("none")
 
-  // FILTRADO + ORDENAMIENTO
+  // -----------------------------
+  // AUTO-HIDE EN SCROLL
+  // -----------------------------
+  const [hideBar, setHideBar] = useState(false)
+  const [lastScroll, setLastScroll] = useState(0)
+  const [showFilters, setShowFilters] = useState(false)
+
+  useEffect(() => {
+    function handleScroll() {
+      const current = window.scrollY
+
+      if (current > lastScroll && current > 100) {
+        setHideBar(true)
+      } else {
+        setHideBar(false)
+      }
+
+      setLastScroll(current)
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [lastScroll])
+
+  // -----------------------------------------------------
+  // FILTROS COMPLETOS
+  // -----------------------------------------------------
   const filteredProducts = useMemo(() => {
     let result = products.filter((p) => {
       const modelo = p.name?.toLowerCase() || ""
@@ -54,6 +118,9 @@ export function CatalogClient({ products }: { products: Props[] }) {
       const searchText = search.toLowerCase()
 
       if (selectedModel && !modelo.includes(selectedModel.toLowerCase()))
+        return false
+
+      if (selectedSubModel && !matchesSubModel(modelo, selectedSubModel))
         return false
 
       if (search && !modelo.includes(searchText))
@@ -74,16 +141,14 @@ export function CatalogClient({ products }: { products: Props[] }) {
       return true
     })
 
-    // Ordenamiento por precio
     if (sortOrder !== "none") {
-      result = [...result].sort((a, b) => {
-        const pa = Number(a.priceUSD || 0)
-        const pb = Number(b.priceUSD || 0)
-        return sortOrder === "asc" ? pa - pb : pb - pa
-      })
+      result = [...result].sort((a, b) =>
+        sortOrder === "asc"
+          ? Number(a.priceUSD || 0) - Number(b.priceUSD || 0)
+          : Number(b.priceUSD || 0) - Number(a.priceUSD || 0)
+      )
     }
 
-    // Orden por generación
     if (sortGen !== "none") {
       result = [...result].sort((a, b) => {
         const ga = getGeneration(a.name)
@@ -93,65 +158,111 @@ export function CatalogClient({ products }: { products: Props[] }) {
     }
 
     return result
-  }, [products, selectedModel, search, filters, sortOrder, sortGen])
+  }, [products, selectedModel, selectedSubModel, search, filters, sortOrder, sortGen])
 
-  // Agrupar productos por modelo
+  // -----------------------------------------------------
+  // AGRUPAR POR MODELO
+  // -----------------------------------------------------
   const grouped = MODELOS.reduce<Record<string, Props[]>>(
-  (acc, modelo) => {
-    acc[modelo] = filteredProducts.filter((p) =>
-      p.name.toLowerCase().includes(modelo.toLowerCase())
-    )
-    return acc
-  },
-  {} as Record<string, Props[]>
-)
+    (acc, modelo) => {
+      acc[modelo] = filteredProducts.filter((p) =>
+        p.name.toLowerCase().includes(modelo.toLowerCase())
+      )
+      return acc
+    },
+    {} as Record<string, Props[]>
+  )
 
-
+  // -----------------------------------------------------
+  // UI
+  // -----------------------------------------------------
   return (
     <div className="space-y-12">
 
       {/* STICKY FILTER BAR */}
-      <div className="
-        sticky top-0 z-50 
-        bg-white/90 backdrop-blur-md 
-        py-4 border-b
-        space-y-3
-      ">
-        {/* Buscador */}
+      <div
+        className={`
+          sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b
+          transition-all duration-300
+
+          ${hideBar ? "opacity-0 -translate-y-full" : "opacity-100 translate-y-0"}
+
+          sm:py-4 sm:space-y-3
+          py-2 space-y-2
+        `}
+      >
+
+        {/* BUSCADOR */}
         <Input
           placeholder="🔍 Buscar modelo..."
-          className="max-w-md mx-auto rounded-full px-5 py-3 text-lg border-gray-300 shadow-sm"
+          className="
+            max-w-md mx-auto rounded-full px-4 py-2 text-base
+            sm:px-5 sm:py-3 sm:text-lg
+            border-gray-300 shadow-sm
+          "
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        {/* Chips por modelo */}
+        {/* MODELOS */}
         <div className="flex gap-2 flex-wrap justify-center">
           {MODELOS.map((modelo) => (
             <Badge
               key={modelo}
               variant={selectedModel === modelo ? "default" : "outline"}
-              className="cursor-pointer px-3 py-2 rounded-full"
-              onClick={() =>
-                setSelectedModel((prev) =>
-                  prev === modelo ? null : modelo
-                )
-              }
+              className="cursor-pointer px-3 py-1.5 rounded-full text-sm sm:text-base"
+              onClick={() => {
+                setSelectedModel(modelo === selectedModel ? null : modelo)
+                setSelectedSubModel(null)
+                setShowFilters(false)
+              }}
             >
               {modelo}
             </Badge>
           ))}
         </div>
 
-        {/* FILTROS AVANZADOS */}
-        <div className="flex gap-3 flex-wrap justify-center items-center">
+        {/* SUBMODELOS */}
+        {selectedModel && (
+          <div className="flex gap-2 flex-wrap justify-center mt-1">
+            {SUBMODELOS_MAP[selectedModel]?.map((sub) => (
+              <Badge
+                key={sub}
+                variant={selectedSubModel === sub ? "default" : "outline"}
+                className="cursor-pointer px-3 py-1.5 rounded-full text-sm sm:text-base"
+                onClick={() =>
+                  setSelectedSubModel(sub === selectedSubModel ? null : sub)
+                }
+              >
+                {sub.toUpperCase()}
+              </Badge>
+            ))}
+          </div>
+        )}
 
+        {/* BOTÓN MOBILE PARA EXPANDIR FILTROS */}
+        <div className="sm:hidden flex justify-center">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="text-sm text-gray-600 underline"
+          >
+            {showFilters ? "Ocultar filtros" : "Mostrar filtros"}
+          </button>
+        </div>
+
+        {/* FILTROS AVANZADOS */}
+        <div
+          className={`
+            flex gap-3 flex-wrap justify-center items-center mt-1
+            ${showFilters ? "flex" : "hidden sm:flex"}
+          `}
+        >
           <select
             value={filters.capacity}
             onChange={(e) =>
               setFilters((f) => ({ ...f, capacity: e.target.value }))
             }
-            className="border p-2 rounded-full bg-white shadow-sm"
+            className="border p-2 rounded-full bg-white shadow-sm text-sm sm:text-base"
           >
             <option value="">Capacidad</option>
             <option value="64">64GB</option>
@@ -166,7 +277,7 @@ export function CatalogClient({ products }: { products: Props[] }) {
             onChange={(e) =>
               setFilters((f) => ({ ...f, color: e.target.value }))
             }
-            className="border p-2 rounded-full bg-white shadow-sm"
+            className="border p-2 rounded-full bg-white shadow-sm text-sm sm:text-base"
           >
             <option value="">Color</option>
             <option value="negro">Negro</option>
@@ -177,32 +288,30 @@ export function CatalogClient({ products }: { products: Props[] }) {
             <option value="silver">Silver</option>
           </select>
 
-          {/* ORDEN POR PRECIO */}
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value as any)}
-            className="border p-2 rounded-full bg-white shadow-sm"
+            className="border p-2 rounded-full bg-white shadow-sm text-sm sm:text-base"
           >
             <option value="none">Precio</option>
             <option value="asc">Menor a mayor</option>
             <option value="desc">Mayor a menor</option>
           </select>
 
-          {/* ORDEN POR GENERACIÓN */}
           <select
             value={sortGen}
             onChange={(e) => setSortGen(e.target.value as any)}
-            className="border p-2 rounded-full bg-white shadow-sm"
+            className="border p-2 rounded-full bg-white shadow-sm text-sm sm:text-base"
           >
             <option value="none">Generación</option>
             <option value="new">Más nuevo</option>
             <option value="old">Más viejo</option>
           </select>
-
         </div>
+
       </div>
 
-      {/* SEPARADORES POR MODELO */}
+      {/* LISTADO POR MODELO */}
       {MODELOS.map((modelo) => {
         const items = grouped[modelo]
         if (!items?.length) return null

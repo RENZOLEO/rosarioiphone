@@ -1,10 +1,9 @@
 import { fetchSheet } from "@/lib/fetchSheet"
 import { CatalogClient } from "@/components/CatalogClient"
 
-
 export default async function MinoristaPage() {
   const SHEET_ID = "1KiPkhmQLGfhLAmrknRFVEsdTyXcCfKO0NRY9IEvJwVg"
-  const GID = "0" // poné acá el gid real de la pestaña Catalogo
+  const GID = "0" // GID real de la pestaña Catalogo
   const rawProducts = await fetchSheet(SHEET_ID, GID)
 
   const products = rawProducts.map((p: any) => ({
@@ -25,16 +24,26 @@ export default async function MinoristaPage() {
 
   return (
     <main className="min-h-screen bg-white text-black">
-      {/* HERO PREMIUM */}
-      <section className="w-full py-16 md:py-24 px-6 md:px-12 text-center flex flex-col items-center border-b">
 
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-          Rosario <span className="text-gray-700">iPhone</span>
+      {/* HERO PREMIUM */}
+      <section className="w-full py-14 md:py-20 px-6 md:px-12 text-center flex flex-col items-center border-b bg-white">
+
+        {/* Título con degradé azul */}
+        <h1
+          className="
+            text-4xl md:text-6xl font-extrabold tracking-tight 
+            bg-gradient-to-r from-blue-500 to-blue-700 
+            bg-clip-text text-transparent
+          "
+        >
+          Rosario iPhone
         </h1>
 
-        <p className="mt-4 text-lg md:text-xl text-gray-600 max-w-2xl">
-          Catálogo premium actualizado en tiempo real — todos los modelos, todas las capacidades, todos los colores.
+        {/* Subtítulo más pequeño */}
+        <p className="mt-3 text-sm md:text-lg text-gray-600 max-w-2xl">
+          Catálogo premium actualizado en tiempo real — todos los modelos, capacidades y colores.
         </p>
+
       </section>
 
       {/* CATÁLOGO PREMIUM */}

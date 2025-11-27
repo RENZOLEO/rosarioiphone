@@ -1,95 +1,97 @@
 "use client"
 
+import React from "react"
+
 export type Props = {
   name: string
   capacity: string
-  battery: string
   color: string
   imei: string
   priceUSD: string
   priceARS: string
   image: string
   video: string
+
+  battery: number | null
+  category: "iphone" | "iphone-new" | "ipad" | "airpods" | "ps5" | "no-battery"
 }
 
-export function ProductCard({
-  name,
-  capacity,
-  battery,
-  color,
-  imei,
-  priceUSD,
-  priceARS,
-  video,
-}: Props) {
+// ----------------------------------------------------
+// FORMATEADOR DE PRECIOS (formato argentino)
+// ----------------------------------------------------
+function formatPrice(value: string | number) {
+  const num = Number(value)
+  if (isNaN(num)) return value
 
-  // FORMATO APPLE PARA CAPACIDAD
-  const formattedCapacity = capacity
-    ?.replace("GB", " GB")
-    ?.replace("TB", " TB")
-    ?.toUpperCase()
+  return num.toLocaleString("es-AR", {
+    style: "decimal",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  })
+}
 
-  // BADGES AUTOMÁTICOS PRO / PRO MAX / PLUS
+export function ProductCard(props: Props) {
+  const {
+    name,
+    capacity,
+    color,
+    imei,
+    priceUSD,
+    priceARS,
+    video,
+    battery,
+    category,
+  } = props
+
+  // CAPACIDAD
+  const formattedCapacity =
+    capacity?.replace("GB", " GB")?.replace("TB", " TB")?.toUpperCase()
+
+  // BADGES PRO / PLUS / MINI / etc
   const getModelBadge = () => {
     const n = name.toLowerCase()
     if (n.includes("pro max")) return "Pro Max"
     if (n.includes("pro")) return "Pro"
     if (n.includes("plus")) return "Plus"
+    if (n.includes("mini")) return "Mini"
     return null
   }
-
   const badge = getModelBadge()
 
-  // PUNTO DE COLOR APPLE
+  // DOT DE COLOR
   const colorDot: Record<string, string> = {
-    negro: "bg-black",
     black: "bg-black",
-    midnight: "bg-black",
-    blanco: "bg-gray-300",
     white: "bg-gray-200",
     silver: "bg-gray-300",
-    azul: "bg-blue-500",
     blue: "bg-blue-500",
-    rojo: "bg-red-500",
     red: "bg-red-500",
-    dorado: "bg-yellow-400",
     gold: "bg-yellow-400",
+    pink: "bg-pink-400",
+    titanium: "bg-slate-400",
   }
-
-  const dotClass = colorDot[color.toLowerCase()] || "bg-gray-400"
-
-  // ESTADO DE BATERÍA ESTILO APPLE
-  const batteryNum = Number(battery || 0)
-
-  const batteryStatus =
-    batteryNum >= 95
-      ? "Excelente"
-      : batteryNum >= 90
-      ? "Muy buena"
-      : batteryNum >= 85
-      ? "Buena"
-      : "A revisar"
+  const dotClass = colorDot[color] || "bg-gray-400"
 
   return (
-    <div className="
-      rounded-3xl 
-      border border-gray-200 
-      p-6 
-      shadow-sm 
-      bg-white/70 
-      backdrop-blur-md 
-      hover:shadow-xl 
-      hover:-translate-y-1 
-      transition-all 
-      duration-300
-    ">
-
+    <div
+      className="
+        rounded-3xl 
+        border border-gray-200 
+        p-6 
+        shadow-sm 
+        bg-white/70 
+        backdrop-blur-md 
+        hover:shadow-xl 
+        hover:-translate-y-1 
+        transition-all 
+        duration-300
+      "
+    >
       {/* TÍTULO */}
       <h3 className="text-2xl font-semibold tracking-tight text-center font-[system-ui]">
         {name}
       </h3>
 
-      {/* BADGE PRO / PRO MAX / PLUS */}
+      {/* BADGE PRO / MAX / PLUS */}
       {badge && (
         <div className="mt-2 text-center">
           <span className="px-3 py-1 text-xs rounded-full bg-black text-white">
@@ -98,45 +100,87 @@ export function ProductCard({
         </div>
       )}
 
+      {/* BADGE CATEGORÍA */}
+      <div className="mt-2 text-center">
+        {category === "iphone-new" && (
+          <span className="px-3 py-1 text-xs rounded-full bg-green-600 text-white">
+            Sellado / Nuevo
+          </span>
+        )}
+
+        {category === "ipad" && (
+          <span className="px-3 py-1 text-xs rounded-full bg-purple-600 text-white">
+            iPad
+          </span>
+        )}
+
+        {category === "airpods" && (
+          <span className="px-3 py-1 text-xs rounded-full bg-gray-700 text-white">
+            AirPods
+          </span>
+        )}
+
+        {category === "ps5" && (
+          <span className="px-3 py-1 text-xs rounded-full bg-indigo-600 text-white">
+            PS5 Accesorio
+          </span>
+        )}
+
+        {category === "no-battery" && (
+          <span className="px-3 py-1 text-xs rounded-full bg-red-500 text-white">
+            Sin datos de batería
+          </span>
+        )}
+      </div>
+
       {/* INFO PRINCIPAL */}
       <div className="mt-5 space-y-3 text-center">
 
-        {/* Capacidad + Color + Punto */}
-        <p className="text-gray-800 text-lg flex items-center justify-center gap-2">
-          {formattedCapacity}  
-          
-          {/* puntito de color */}
-          <span 
-            className={`h-3 w-3 rounded-full border ${dotClass}`} 
-          ></span>
+        {/* Capacidad + Color */}
+        {capacity && (
+          <p className="text-gray-800 text-lg flex items-center justify-center gap-2">
+            {formattedCapacity}
 
-          <span className="capitalize">{color}</span>
-        </p>
+            <span className={`h-3 w-3 rounded-full border ${dotClass}`}></span>
 
-        {/* Estado de batería */}
-        {battery && (
+            <span className="capitalize">{color}</span>
+          </p>
+        )}
+
+        {/* BATERÍA SIN TEXTO DE CALIDAD */}
+        {category === "iphone" && battery !== null && (
           <p className="text-gray-600 text-sm">
-            🔋 {battery}% — {batteryStatus}
+            🔋 {battery}%
+          </p>
+        )}
+
+        {category === "iphone-new" && (
+          <p className="text-green-600 text-sm font-semibold">
+            🔋 100%
           </p>
         )}
 
         {/* IMEI */}
-        <p className="text-gray-400 text-xs">IMEI: {imei}</p>
+        {imei && <p className="text-gray-400 text-xs">IMEI: {imei}</p>}
 
-        {/* Divider */}
         <div className="border-t pt-3 mt-4" />
 
-        {/* Precio */}
-        <div className="text-xl font-semibold">
-          <span className="text-black">${priceUSD}</span>{" "}
-          <span className="text-gray-500 text-sm">USD</span>
-        </div>
-
-        {priceARS && (
-          <p className="text-gray-500 text-sm">AR$ {priceARS}</p>
+        {/* PRECIO USD */}
+        {priceUSD && (
+          <div className="text-xl font-semibold">
+            <span className="text-black">$ {formatPrice(priceUSD)}</span>{" "}
+            <span className="text-gray-500 text-sm">USD</span>
+          </div>
         )}
 
-        {/* Video */}
+        {/* PRECIO PESOS — sin AR$ adelante */}
+        {priceARS && (
+          <p className="text-gray-700 text-sm font-medium">
+            {formatPrice(priceARS)} pesos
+          </p>
+        )}
+
+        {/* VIDEO */}
         {video && (
           <a
             href={video}
@@ -150,6 +194,9 @@ export function ProductCard({
     </div>
   )
 }
+
+
+
 
 
 

@@ -1,6 +1,7 @@
 "use client"
 
 export type Props = {
+  category: string   // 👈 AGREGAR ESTO
   name: string
   capacity: string
   battery: number | null

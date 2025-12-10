@@ -4,42 +4,16 @@
 // IMAGEN GENÉRICA (para todos los modelos)
 // -----------------------------------------------------------
 
- function getModelImage(category: string, name: string) {
-  const n = name.toLowerCase()
+// -----------------------------------------------------------
+// IMAGEN SEGÚN CATEGORÍA
+// -----------------------------------------------------------
+import { IMAGE_MAP } from "@/lib/imageMap"
 
-  // iPhone (ya lo tenés andando)
-  if (category === "iphone") {
-    return "/devices/iphone.png"
-  }
-
-  // iPad
-  if (category === "ipad" || n.includes("ipad")) {
-    return "/devices/ipad.png"
-  }
-
-  // AirPods
-  if (category === "airpods" || n.includes("airpods") || n.includes("air pods")) {
-    return "/devices/airpods.png"
-  }
-
-  // MacBook
-  if (category === "macbook" || n.includes("macbook") || n.includes("mac book")) {
-    return "/devices/macbook.png"
-  }
-
-  // PS5
-  if (category === "ps5" || n.includes("ps5") || n.includes("playstation")) {
-    return "/devices/ps5.png"
-  }
-
-  // fallback genérico
-  return "/devices/iphone.png"
+function getImageForProduct(name: string, color: string) {
+  const key = `${name.toLowerCase().trim()}_${color.toLowerCase().trim()}`
+  return IMAGE_MAP[key] || "/devices/default.png"
 }
 
-
-// -----------------------------------------------------------
-// COLOR PILL
-// -----------------------------------------------------------
 function colorToHex(color: string) {
   const c = color.toLowerCase()
 
@@ -84,7 +58,7 @@ export function ProductCard(props: Props) {
     falla,
   } = props
 
-  const img = getModelImage(props.category || "", name)
+  const img = getImageForProduct(name, color)
   const cap = capacity.toUpperCase().includes("GB") ? capacity : capacity + "GB"
 
   // -----------------------------------------------------------
@@ -141,6 +115,10 @@ export function ProductCard(props: Props) {
             : "Usado Premium"}
         </span>
       )}
+
+      <p className="text-sm font-semibold text-emerald-700 -mt-1">
+        ¡Págalo hasta en 24 cuotas fijas y en pesos!
+      </p>  
 
       {/* IMAGEN */}
       <div className="w-full h-44 rounded-xl flex items-center justify-center overflow-hidden bg-white">

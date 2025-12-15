@@ -182,7 +182,7 @@ export function ProductCard(props: Props) {
 
       {/* BOTÓN — WHATSAPP MINIMAL */}
       <a
-        href={`https://wa.me/5493410000000?text=${encodeURIComponent(
+        href={`https://wa.me/5493417482443?text=${encodeURIComponent(
           `Hola! Estoy interesado en el ${name} ${capacity} ${color}. IMEI: ${imei}. ¿Está disponible?`
         )}`}
         target="_blank"

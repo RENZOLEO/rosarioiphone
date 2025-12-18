@@ -88,20 +88,48 @@ export function CatalogClient({ products }: { products: ProductProps[] }) {
   const filtered = useMemo(() => {
     return base.filter((p) => {
       const name = normalizeName(p.name)
-
-      if (search && !name.includes(search.toLowerCase())) return false
-      if (selectedModel && !name.includes("iphone " + selectedModel)) return false
-      if (selectedSub && !name.includes(selectedSub.toLowerCase())) return false
-
-      if (capacityFilter && p.capacity !== capacityFilter) return false
-
-      if (colorFilter && p.color.toLowerCase() !== colorFilter.toLowerCase())
+      const color = normalizeName(p.color || "")
+      const capacity = normalizeName(p.capacity || "")
+  
+      const searchText = search.toLowerCase()
+  
+      // 🔍 SEARCH global (nombre + color + capacidad)
+      if (
+        search &&
+        !(
+          name.includes(searchText) ||
+          color.includes(searchText) ||
+          capacity.includes(searchText)
+        )
+      ) {
         return false
-
+      }
+  
+      // 📱 Modelo (11,12,13...)
+      if (selectedModel && !name.includes("iphone " + selectedModel)) {
+        return false
+      }
+  
+      // 🧩 Submodelo (pro, air, etc)
+      if (selectedSub && !name.includes(selectedSub.toLowerCase())) {
+        return false
+      }
+  
+      // 💾 Capacidad (128, 256, etc)
+      if (capacityFilter && !capacity.includes(capacityFilter.toLowerCase())) {
+        return false
+      }
+  
+      // 🎨 Color
+      if (colorFilter && !color.includes(colorFilter.toLowerCase())) {
+        return false
+      }
+  
+      // 💲 Precio
       const price = Number(p.priceUSD || 0)
       if (minPrice && price < Number(minPrice)) return false
       if (maxPrice && price > Number(maxPrice)) return false
-
+  
       return true
     })
   }, [
@@ -114,6 +142,7 @@ export function CatalogClient({ products }: { products: ProductProps[] }) {
     minPrice,
     maxPrice,
   ])
+  
 
   // ORDENAMIENTOS
   const ordered = useMemo(() => {
@@ -216,7 +245,11 @@ export function CatalogClient({ products }: { products: ProductProps[] }) {
           <option value="ROJO">Rojo</option>
           <option value="ROSA">Rosa</option>
           <option value="CELESTE">Celeste</option>
+          <option value="NATURAL">Natural</option>
+          <option value="PLATA">Plata</option>
+          <option value="NARANJA">Naranja</option> 
           <option value="VERDE">Verde</option>
+          <option value="AMARILLO">Amarillo</option>
           <option value="LILA">Lila</option>
         </select>
 
@@ -226,11 +259,11 @@ export function CatalogClient({ products }: { products: ProductProps[] }) {
           onChange={(e) => setCapacityFilter(e.target.value)}
         >
           <option value="">Capacidad</option>
-          <option value="64">64GB</option>
-          <option value="128">128GB</option>
-          <option value="256">256GB</option>
-          <option value="512">512GB</option>
-          <option value="1TB">1TB</option>
+          <option value="64">64 GB</option>
+          <option value="128">128 GB</option>
+          <option value="256">256 GB</option>
+          <option value="512">512 GB</option>
+          <option value="1TB">1 TB</option>
         </select>
       </div>
 

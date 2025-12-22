@@ -53,7 +53,7 @@ export function CatalogClient({ products }: { products: ProductProps[] }) {
   const [sortGen, setSortGen] = useState("none")
 
   const [page, setPage] = useState(1)
-
+ 
   const resetFilters = () => {
     setSelectedModel(null)
     setSelectedSub(null)
@@ -64,14 +64,25 @@ export function CatalogClient({ products }: { products: ProductProps[] }) {
     setSortOrder("none")
     setSortGen("none")
     setSearch("")
-    setPage(1)
   }
 
   // 🔥🔥 FIX PRINCIPAL: LIMPIAR filtros al montar
   useEffect(() => {
-    resetFilters()
-  }, [])
-
+    setPage(1)
+    }, [
+      category,
+      search,
+      selectedModel,
+      selectedSub,
+      capacityFilter,
+      colorFilter,
+      minPrice,
+      maxPrice,
+      sortOrder,
+      sortGen,
+    ])
+  
+  
   // FILTRO POR CATEGORÍA
   const base = useMemo(() => {
     return products.filter((p) => {
